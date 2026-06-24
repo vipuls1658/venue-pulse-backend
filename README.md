@@ -52,41 +52,23 @@ The event tells the client that data has changed. The client can then request th
 
 `transaction_number` is unique. If a POS system sends the same transaction again, the duplicate is rejected instead of being stored twice.
 
-## Running with Docker
+## Environment setup
 
-Docker Compose starts MySQL, Redis, and the Django backend:
+Create a `.env` file in the project root before choosing either setup method.
 
-```bash
-docker compose up --build
-```
+The `SECRET_KEY` is used by Django for security-related signing. In this project, it also signs the JWT access and refresh tokens. If the key is exposed, someone could create tokens that the backend accepts as valid.
 
-The backend waits for MySQL, runs migrations, and starts Daphne on
-`http://localhost:8000`.
-
-Create an admin user after the services are running:
+If Python and the project dependencies are available, generate a secret key
+with:
 
 ```bash
-docker compose exec backend python manage.py createsuperuser
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
 
-The MySQL container is also available from the host on port `3307`. Application logs are written to the local `logs/` directory.
-
-## Running without Docker
-
-You need Python 3.12, MySQL 8, and optionally Redis. Redis is recommended when more than one backend process is running. A single local process can use the in-memory channel layer.
-
-Create and activate a virtual environment:
-
-```bash
-python3.12 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-Create a `.env` file in the project root. This is a basic local example:
+Add the settings to `.env`:
 
 ```dotenv
-SECRET_KEY=change-me
+SECRET_KEY=<paste-the-generated-key-here>
 DEBUG=true
 ALLOWED_HOSTS=localhost,127.0.0.1
 CORS_ALLOWED_ORIGINS=http://localhost:5173
@@ -102,7 +84,84 @@ DB_PORT=3306
 REDIS_URL=
 ```
 
-Create the database, then run:
+Keep the secret key private and use a different value for each environment.
+
+The current Docker Compose configuration provides its own database connection values for the containers. The database values above are used when running the backend without Docker.
+
+## Running with Docker
+
+This is the easiest way to run the project locally. You only need Docker and
+Docker Compose. MySQL, Redis, and Python do not need to be installed separately.
+
+From the project root, build and start all services:
+
+```bash
+docker compose up --build -d
+```
+
+Docker automatically creates the `venue_pulse` database, waits for MySQL to be
+ready, runs the migrations, and starts the backend with Daphne.
+
+Check that the containers are running:
+
+```bash
+docker compose ps
+```
+
+Create an admin user:
+
+```bash
+docker compose exec backend python manage.py createsuperuser
+```
+
+The API is then available at:
+
+```text
+http://localhost:8000
+```
+
+To view the backend logs:
+
+```bash
+docker compose logs -f backend
+```
+
+To stop the services:
+
+```bash
+docker compose down
+```
+
+The MySQL data is kept in a Docker volume when the services stop. To remove the containers and delete the local database data, run:
+
+```bash
+docker compose down -v
+```
+
+The MySQL container is available from the host on port `3307`. Application logs are written to the local `logs/` directory. The Docker configuration includes a development-only secret key, which must be replaced before deployment.
+
+## Running without Docker
+
+You need Python 3.12, MySQL 8, and optionally Redis. Redis is recommended when more than one backend process is running. A single local process can use the in-memory channel layer.
+
+Create and activate a virtual environment:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+Create the MySQL database. Its name must match the `DB_NAME` value in `.env`
+(`venue_pulse` in the example above):
+
+```sql
+CREATE DATABASE venue_pulse
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+```
+
+Then run:
 
 ```bash
 python manage.py migrate
