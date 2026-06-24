@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Virtualenv
+venv/
+.venv/
+
+
+# Secrets & local config -- .env.example is committed, .env is not.
+.env
+
+# Logs (the directory is kept, its contents are not)
+logs/*
+!logs/.gitkeep
+
+.idea/
+.vscode/

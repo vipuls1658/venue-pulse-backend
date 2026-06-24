@@ -1,0 +1,64 @@
+# Brings up the whole stack: backend (ASGI) + MySQL 8 + Redis.
+#   docker compose up --build
+#
+# This file is self-contained: it provisions its own MySQL database and a
+# dedicated (non-root) app user, and points the backend at the mysql/redis
+# service names. It deliberately does NOT read DB_USER/DB_PASSWORD from the host
+# .env -- the host .env targets a local MySQL (DB_USER=root), and "root" cannot
+# be declared as a MySQL_USER. Override via the shell environment if you need to.
+
+services:
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: venue_pulse
+      MYSQL_USER: venue
+      MYSQL_PASSWORD: venue
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3307:3306"  # host:container -- 3307 avoids clashing with a local MySQL
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build: .
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SECRET_KEY: "docker-dev-insecure-key-change-me-before-any-real-deployment"
+      DEBUG: "true"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,backend"
+      CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:5173"
+      TIME_ZONE: "Asia/Kolkata"
+      DB_NAME: venue_pulse
+      DB_USER: venue
+      DB_PASSWORD: venue
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs:/app/logs  # surface application/error logs on the host
+
+volumes:
+  mysql_data:

@@ -1,0 +1,41 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "auth.invalid_credentials"
+msgstr "Invalid email or password."
+
+msgid "auth.invalid_refresh_token"
+msgstr "Invalid or expired refresh token."
+
+msgid "auth.login_successful"
+msgstr "Login successful."
+
+msgid "auth.login_failed"
+msgstr "Login failed."
+
+msgid "auth.token_refreshed"
+msgstr "Token refreshed successfully."
+
+msgid "auth.token_refresh_failed"
+msgstr "Token refresh failed."
+
+msgid "error.venue_not_found"
+msgstr "No venue exists with that id."
+
+msgid "error.invalid_request_data"
+msgstr "Invalid request data."
+
+msgid "error.server_error"
+msgstr "Something went wrong. Please try again."
+
+msgid "transaction.sale_positive_total"
+msgstr "A sale must have a positive total amount."
+
+msgid "transaction.created"
+msgstr "Transaction created successfully."
+
+msgid "transaction.create_failed"
+msgstr "Transaction could not be created."

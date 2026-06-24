@@ -1,0 +1,15 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.codegraph/
+.git/
+.gitignore
+logs/*
+*.log
+data_dump.json
+.env
+README.md
